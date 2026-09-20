@@ -1,42 +1,170 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Banner Images</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            text-align: center;
-        }
 
-        .banner-container {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            flex-wrap: wrap;
-        }
+```
+<title>Banner Images</title>
 
-        .banner-container img {
-            max-width: 100%;
-            width: 400px;
-            height: auto;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-        }
-    </style>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        text-align: center;
+        background: #f8f9fa;
+    }
+
+    h2 {
+        margin-bottom: 25px;
+    }
+
+    .banner-container {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+
+    .banner-container img {
+        max-width: 100%;
+        width: 400px;
+        height: auto;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        background: #fff;
+    }
+
+    .loading {
+        font-size: 16px;
+        color: #666;
+    }
+
+    .error {
+        color: #d32f2f;
+        font-size: 16px;
+    }
+</style>
+```
+
 </head>
+
 <body>
 
-    <h2>Banner Images</h2>
+```
+<h2>Banner Images</h2>
 
-    <div class="banner-container">
-        <img src="images/banner/featue-image-unique-toy1.png" alt="Banner 1">
-        <img src="images/banner/featured-image-uniaue-toy2.png" alt="Banner 2">
-        <img src="images/banner/Education-Toys-Main.jpg" alt="Banner 2">
-    </div>
+<div id="bannerContainer" class="banner-container">
+    <div class="loading">Loading banner images...</div>
+</div>
+
+<script>
+
+    // GitHub repository details
+    const GITHUB_API =
+        "https://api.github.com/repos/unique-toy/assets/contents/images/banner";
+
+    const bannerContainer =
+        document.getElementById("bannerContainer");
+
+    async function loadBannerImages() {
+
+        try {
+
+            const response = await fetch(GITHUB_API);
+
+            if (!response.ok) {
+                throw new Error(
+                    `GitHub API error: ${response.status}`
+                );
+            }
+
+            const files = await response.json();
+
+            // Remove loading message
+            bannerContainer.innerHTML = "";
+
+            // Supported image extensions
+            const imageExtensions = [
+                ".jpg",
+                ".jpeg",
+                ".png",
+                ".gif",
+                ".webp",
+                ".svg"
+            ];
+
+            // Filter only image files
+            const images = files.filter(file => {
+
+                if (file.type !== "file") {
+                    return false;
+                }
+
+                const fileName = file.name.toLowerCase();
+
+                return imageExtensions.some(extension =>
+                    fileName.endsWith(extension)
+                );
+
+            });
+
+            if (images.length === 0) {
+
+                bannerContainer.innerHTML =
+                    '<div class="error">No banner images found.</div>';
+
+                return;
+            }
+
+            // Display all images
+            images.forEach((file, index) => {
+
+                const img = document.createElement("img");
+
+                // GitHub provides the direct image URL
+                img.src = file.download_url;
+
+                img.alt = `Banner ${index + 1}`;
+
+                img.loading = "lazy";
+
+                img.onerror = function () {
+                    console.error(
+                        "Unable to load image:",
+                        file.name
+                    );
+
+                    img.remove();
+                };
+
+                bannerContainer.appendChild(img);
+
+            });
+
+            console.log(
+                `Loaded ${images.length} banner images.`
+            );
+
+        } catch (error) {
+
+            console.error(
+                "Error loading banner images:",
+                error
+            );
+
+            bannerContainer.innerHTML =
+                '<div class="error">Unable to load banner images.</div>';
+        }
+    }
+
+    // Load banners
+    loadBannerImages();
+
+</script>
+```
 
 </body>
 </html>
